@@ -1,0 +1,103 @@
+ DELIMITER //
+ CREATE PROCEDURE GetAllProducts()
+   BEGIN
+   SELECT *  FROM products;
+   END //
+ DELIMITER ;
+
+=============Insert Record=================
+DELIMITER //
+CREATE PROCEDURE InsertStudentRecord(
+	IN StudentFirstName Varchar(200),
+ 	IN StudentLastName  Varchar(200),
+ 	IN StudentEmail     Varchar(50)
+)
+ BEGIN
+ Insert into tbl_Students (`first_name`, `last_name`, `email`)
+   Values(StudentFirstName, StudentLastName,StudentEmail);
+ END //
+DELIMITER ;
+
+Example : DB::statement('CALL InsertStudentRecord("?", "?", "?")', array('abc','pqr','abc@gmail.com'));
+===============Update Record===============
+DELIMITER //
+CREATE PROCEDURE UpdateStudentRecord(
+	IN StudentId Int(11),
+	IN StudentLastName Varchar(200)
+)
+BEGIN
+UPDATE tbl_students SET `first_name` = StudentName WHERE `student_id` = StudentId;
+END //
+DELIMITER ;
+
+Example : DB::statement('CALL UpdateStudentRecord("6",'PQR')');
+
+===============Delete Record===============
+DELIMITER //
+CREATE PROCEDURE DeleteStudentRecord(
+	IN StudentId Int(11))
+BEGIN
+DELETE FROM `tbl_students` WHERE `student_id` = StudentId;
+END //
+DELIMITER ;
+
+Example: DB::statement('CALL DeleteStudentRecord("7")');
+
+====================Join Record=========================
+
+DELIMITER
+CREATE PROCEDURE GetUserCountry(
+	IN UserId Int(11))
+BEGIN
+SELECT users.first_name,users.last_name,users.email,users.gender,users.address,users.dob,conutry.name AS Country,state.name AS State,city.name AS City From users JOIN countries AS conutry on users.country_id=conutry.id
+JOIN states AS state on users.state_id=state.id 
+JOIN cities AS city on users.city_id=city.id WHERE users.id=UserId ;
+END//
+DELIMITER ;
+
+Example: DB::select('CALL GetUserCountry("7")');
+http://www.mysqltutorial.org/stored-procedures-parameters.aspx
+http://www.mysqltutorial.org/stored-procedures-parameters.aspx
+
+================================================================================================
+Trigger
+
+Example: CREATE TRIGGER trigger_name trigger_time trigger_event
+ ON table_name
+ FOR EACH ROW
+ BEGIN
+ ...
+ END;
+
+CREATE TABLE employees_audit (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    employeeNumber INT NOT NULL,
+    lastname VARCHAR(50) NOT NULL,
+    changedat DATETIME DEFAULT NULL,
+    action VARCHAR(50) DEFAULT NULL
+);
+
+DELIMITER $$
+CREATE TRIGGER before_employee_update 
+    BEFORE UPDATE ON employees
+    FOR EACH ROW 
+BEGIN
+    INSERT INTO employees_audit
+    SET action = 'update',
+     employeeNumber = OLD.employeeNumber,
+        lastname = OLD.lastname,
+        changedat = NOW(); 
+END$$
+DELIMITER ;
+
+Or
+
+DELIMITER $$
+CREATE TRIGGER before_employee_update 
+    BEFORE UPDATE ON employees
+    FOR EACH ROW 
+BEGIN
+     INSERT INTO employees_audit (`employeeNumber`,`lastname`,`changedat`,`action`)
+    Values(OLD.employeeNumber, OLD.lastname, NOW(), 'update');
+END$$
+DELIMITER ;
